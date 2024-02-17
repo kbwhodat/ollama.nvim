@@ -5,15 +5,24 @@ function util.handle_stream(cb)
 	return function(_, chunk, job)
 		vim.schedule(function()
 			local full_message = "1."
-			local _, body = pcall(function()
+			local success, body = pcall(function()
 				return vim.json.decode(chunk)
 			end)
-			full_message = full_message .. body.response
+
+			if not success then
+				vim.api.nvim_notify("Failed to decode JSON", vim.log.levels.ERROR, { title = "Ollama" })
+				return
+			end
+
 			if type(body) ~= "table" or body.response == nil then
 				if body.error ~= nil then
 					vim.api.nvim_notify("Error: " .. body.error, vim.log.levels.ERROR, { title = "Ollama" })
 				end
 				return
+			end
+
+			if body.done == false then
+				full_message = full_message .. body.response
 			end
 			-- Here, we'll write the body to a file
 
