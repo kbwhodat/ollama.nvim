@@ -1,41 +1,27 @@
 local util = {}
 
-local full_message = "1."
-
 ---@param cb fun(body: table, job: Job?)
 function util.handle_stream(cb)
+	local full_message = ""
 	return function(_, chunk, job)
 		vim.schedule(function()
-			local success, body = pcall(function()
+			local _, body = pcall(function()
 				return vim.json.decode(chunk)
 			end)
-
-			if not success then
-				vim.api.nvim_notify("Failed to decode JSON", vim.log.levels.ERROR, { title = "Ollama" })
-				return
-			end
-
 			if type(body) ~= "table" or body.response == nil then
 				if body.error ~= nil then
 					vim.api.nvim_notify("Error: " .. body.error, vim.log.levels.ERROR, { title = "Ollama" })
 				end
 				return
 			end
-
-			if body.response == false then
-				full_message = full_message .. body.response
-			end
 			-- Here, we'll write the body to a file
-
-			if body.done then
-				local file_path = "/tmp/letsee.txt" -- Specify the path to your output file
-				local file = io.open(file_path, "a") -- Open the file in append mode
-				if file then
-					file:write(full_message) -- Encode the body to JSON and write to the file
-					file:close() -- Don't forget to close the file
-				else
-					vim.api.nvim_notify("Failed to open file for writing.", vim.log.levels.ERROR, { title = "Ollama" })
-				end
+			local file_path = "/tmp/sourceoftrueth.json" -- Specify the path to your output file
+			local file = io.open(file_path, "a") -- Open the file in append mode
+			if file then
+				file:write(vim.json.decode(body).response .. "\n") -- Encode the body to JSON and write to the file
+				file:close() -- Don't forget to close the file
+			else
+				vim.api.nvim_notify("Failed to open file for writing.", vim.log.levels.ERROR, { title = "Ollama" })
 			end
 			cb(body, job)
 		end)
