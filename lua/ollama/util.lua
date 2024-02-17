@@ -2,17 +2,17 @@ local util = {}
 
 ---@param cb fun(body: table, job: Job?)
 function util.handle_stream(cb)
-	local full_message = ""
 	return function(_, chunk, job)
 		vim.schedule(function()
+			local full_message = "1."
 			local _, body = pcall(function()
 				return vim.json.decode(chunk)
 			end)
+			full_message = full_message .. body.response
 			if type(body) ~= "table" or body.response == nil then
 				if body.error ~= nil then
 					vim.api.nvim_notify("Error: " .. body.error, vim.log.levels.ERROR, { title = "Ollama" })
 				end
-				full_message = full_message .. body.response
 				return
 			end
 			-- Here, we'll write the body to a file
