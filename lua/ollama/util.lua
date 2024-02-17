@@ -1,10 +1,11 @@
 local util = {}
 
+local full_message = "1."
+
 ---@param cb fun(body: table, job: Job?)
 function util.handle_stream(cb)
 	return function(_, chunk, job)
 		vim.schedule(function()
-			local full_message = "1."
 			local success, body = pcall(function()
 				return vim.json.decode(chunk)
 			end)
@@ -21,7 +22,7 @@ function util.handle_stream(cb)
 				return
 			end
 
-			if body.done == false then
+			if body.response == false then
 				full_message = full_message .. body.response
 			end
 			-- Here, we'll write the body to a file
