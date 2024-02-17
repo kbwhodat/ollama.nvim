@@ -9,15 +9,30 @@ function util.handle_stream(cb)
 				return vim.json.decode(chunk)
 			end)
 			if type(body) ~= "table" or body.response == nil then
+				save_to_file(body.response)
 				if body.error ~= nil then
 					vim.api.nvim_notify("Error: " .. body.error, vim.log.levels.ERROR, { title = "Ollama" })
 				end
 				return
 			end
+			save_to_file(body)
 			cb(body, job)
 		end)
 	end
 end
+
+
+function save_to_file(text)
+    local file, err = io.open(file_path, "w")
+    if not file then
+        vim.api.nvim_notify("Error opening file: " .. err, vim.log.levels.ERROR, {})
+        return
+    end
+    file:write(text)
+    file:close()
+    vim.api.nvim_notify("Saved to " .. file_path, vim.log.levels.INFO, {})
+end
+
 
 ---@class Ollama.Util.ShowSpinnerOptions
 ---@field start_ln number? The line to start the spinner at

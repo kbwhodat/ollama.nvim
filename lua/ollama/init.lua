@@ -101,6 +101,8 @@ local function update_jobs_length()
 	end
 end
 
+
+
 ---@param job Job
 local function add_job(job)
 	jobs[job.pid] = job
