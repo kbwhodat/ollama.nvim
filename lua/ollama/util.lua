@@ -23,7 +23,7 @@ end
 
 
 function save_to_file(text)
-    local file, err = io.open(file_path, "w")
+    local file, err = io.open("/tmp/ollama.txt", "w")
     if not file then
         vim.api.nvim_notify("Error opening file: " .. err, vim.log.levels.ERROR, {})
         return
