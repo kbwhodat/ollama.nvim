@@ -2,34 +2,39 @@ local util = {}
 
 ---@param cb fun(body: table, job: Job?)
 function util.handle_stream(cb)
-    local accumulated_responses = "" -- Initialize an empty string to accumulate responses
-
+    local accumulated_chunks = {} -- Table to accumulate chunks
     return function(_, chunk, job)
         vim.schedule(function()
             local _, body = pcall(function()
                 return vim.json.decode(chunk)
             end)
-            if type(body) ~= "table" then
-                return
-            end
-            -- Accumulate responses if 'response' is present
+            if type(body) ~= "table" then return end
+
+            -- Accumulate chunks if they contain part of the response
             if body.response then
-                accumulated_responses = accumulated_responses .. body.response
+                table.insert(accumulated_chunks, body.response)
             end
-            -- Once the operation is done, write to a file
+
+            -- Check if the message transmission is complete (e.g., body.done is true)
             if body.done then
-                local file_path = "/tmp/koutput.txt" -- Specify your file path here
+                -- Assemble the accumulated chunks into a single message
+                local assembled_message = table.concat(accumulated_chunks)
+                -- Write the assembled message to a file
+                local file_path = "/tmp/koutput.txt" -- Specify your output file path
                 local file = io.open(file_path, "w") -- Open the file in write mode to overwrite existing content
                 if file then
-                    file:write(accumulated_responses) -- Write the accumulated response to the file
+                    file:write(assembled_message) -- Write the assembled message to the file
                     file:close() -- Close the file
                 else
-                    vim.api.nvim_notify("Failed to open file for writing.", vim.log.levels.ERROR, { title = "Error" })
+                    vim.api.nvim_notify("Failed to open file for writing.", vim.log.levels.ERROR, { title = "Ollama" })
                 end
-                accumulated_responses = "" -- Reset the accumulator for future use
+
+                -- Clear the accumulated_chunks for the next message
+                accumulated_chunks = {}
             end
-            -- Proceed with the callback if necessary
-            cb(body, job)
+
+            -- Call the callback function if provided
+            if cb then cb(body, job) end
         end)
     end
 end
