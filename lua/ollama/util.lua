@@ -2,29 +2,36 @@ local util = {}
 
 ---@param cb fun(body: table, job: Job?)
 function util.handle_stream(cb)
-	return function(_, chunk, job)
-		vim.schedule(function()
-			local _, body = pcall(function()
-				return vim.json.decode(chunk)
-			end)
-			if type(body) ~= "table" or body.response == nil then
-				if body.error ~= nil then
-					vim.api.nvim_notify("Error: " .. body.error, vim.log.levels.ERROR, { title = "Ollama" })
-				end
-				return
-			end
-			-- Here, we'll write the body to a file
-			local file_path = "/tmp/katollama.json" -- Specify the path to your output file
-			local file = io.open(file_path, "a") -- Open the file in append mode
-			if file then
-				file:write(vim.json.encode(body) .. "\n") -- Encode the body to JSON and write to the file
-				file:close() -- Don't forget to close the file
-			else
-				vim.api.nvim_notify("Failed to open file for writing.", vim.log.levels.ERROR, { title = "Ollama" })
-			end
-			cb(body, job)
-		end)
-	end
+    local accumulated_responses = "" -- Initialize an empty string to accumulate responses
+
+    return function(_, chunk, job)
+        vim.schedule(function()
+            local _, body = pcall(function()
+                return vim.json.decode(chunk)
+            end)
+            if type(body) ~= "table" then
+                return
+            end
+            -- Accumulate responses if 'response' is present
+            if body.response then
+                accumulated_responses = accumulated_responses .. body.response
+            end
+            -- Once the operation is done, write to a file
+            if body.done then
+                local file_path = "path/to/your/output.txt" -- Specify your file path here
+                local file = io.open(file_path, "w") -- Open the file in write mode to overwrite existing content
+                if file then
+                    file:write(accumulated_responses) -- Write the accumulated response to the file
+                    file:close() -- Close the file
+                else
+                    vim.api.nvim_notify("Failed to open file for writing.", vim.log.levels.ERROR, { title = "Error" })
+                end
+                accumulated_responses = "" -- Reset the accumulator for future use
+            end
+            -- Proceed with the callback if necessary
+            cb(body, job)
+        end)
+    end
 end
 
 
