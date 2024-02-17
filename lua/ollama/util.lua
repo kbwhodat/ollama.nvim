@@ -2,41 +2,34 @@ local util = {}
 
 ---@param cb fun(body: table, job: Job?)
 function util.handle_stream(cb)
-    local accumulated_chunks = {} -- Table to accumulate chunks
-    return function(_, chunk, job)
-        vim.schedule(function()
-            local _, body = pcall(function()
-                return vim.json.decode(chunk)
-            end)
-            if type(body) ~= "table" then return end
+	local full_message = ""
+	return function(_, chunk, job)
+		vim.schedule(function()
+			local _, body = pcall(function()
+				return vim.json.decode(chunk)
+			end)
+			if type(body) ~= "table" or body.response == nil then
+				if body.error ~= nil then
+					vim.api.nvim_notify("Error: " .. body.error, vim.log.levels.ERROR, { title = "Ollama" })
+				end
+				full_message = full_message .. body.response
+				return
+			end
+			-- Here, we'll write the body to a file
 
-            -- Accumulate chunks if they contain part of the response
-            if body.response then
-                table.insert(accumulated_chunks, body.response)
-            end
-
-            -- Check if the message transmission is complete (e.g., body.done is true)
-            if body.done then
-                -- Assemble the accumulated chunks into a single message
-                local assembled_message = table.concat(accumulated_chunks)
-                -- Write the assembled message to a file
-                local file_path = "/tmp/koutput.txt" -- Specify your output file path
-                local file = io.open(file_path, "w") -- Open the file in write mode to overwrite existing content
-                if file then
-                    file:write(assembled_message) -- Write the assembled message to the file
-                    file:close() -- Close the file
-                else
-                    vim.api.nvim_notify("Failed to open file for writing.", vim.log.levels.ERROR, { title = "Ollama" })
-                end
-
-                -- Clear the accumulated_chunks for the next message
-                accumulated_chunks = {}
-            end
-
-            -- Call the callback function if provided
-            if cb then cb(body, job) end
-        end)
-    end
+			if body.done then
+				local file_path = "/tmp/letsee.txt" -- Specify the path to your output file
+				local file = io.open(file_path, "a") -- Open the file in append mode
+				if file then
+					file:write(full_message) -- Encode the body to JSON and write to the file
+					file:close() -- Don't forget to close the file
+				else
+					vim.api.nvim_notify("Failed to open file for writing.", vim.log.levels.ERROR, { title = "Ollama" })
+				end
+			end
+			cb(body, job)
+		end)
+	end
 end
 
 
