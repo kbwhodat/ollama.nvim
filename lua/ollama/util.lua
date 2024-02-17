@@ -18,7 +18,7 @@ function util.handle_stream(cb)
             end
             -- Once the operation is done, write to a file
             if body.done then
-                local file_path = "path/to/your/output.txt" -- Specify your file path here
+                local file_path = "/tmp/koutput.txt" -- Specify your file path here
                 local file = io.open(file_path, "w") -- Open the file in write mode to overwrite existing content
                 if file then
                     file:write(accumulated_responses) -- Write the accumulated response to the file
