@@ -2,35 +2,29 @@ local util = {}
 
 ---@param cb fun(body: table, job: Job?)
 function util.handle_stream(cb)
-	---@param job Job?
 	return function(_, chunk, job)
 		vim.schedule(function()
 			local _, body = pcall(function()
 				return vim.json.decode(chunk)
 			end)
 			if type(body) ~= "table" or body.response == nil then
-				save_to_file(body.response)
 				if body.error ~= nil then
 					vim.api.nvim_notify("Error: " .. body.error, vim.log.levels.ERROR, { title = "Ollama" })
 				end
 				return
 			end
-			save_to_file(body)
+			-- Here, we'll write the body to a file
+			local file_path = "/tmp/katollama.json" -- Specify the path to your output file
+			local file = io.open(file_path, "a") -- Open the file in append mode
+			if file then
+				file:write(vim.json.encode(body) .. "\n") -- Encode the body to JSON and write to the file
+				file:close() -- Don't forget to close the file
+			else
+				vim.api.nvim_notify("Failed to open file for writing.", vim.log.levels.ERROR, { title = "Ollama" })
+			end
 			cb(body, job)
 		end)
 	end
-end
-
-
-function save_to_file(text)
-    local file, err = io.open("/tmp/ollama.txt", "w")
-    if not file then
-        vim.api.nvim_notify("Error opening file: " .. err, vim.log.levels.ERROR, {})
-        return
-    end
-    file:write(text)
-    file:close()
-    vim.api.nvim_notify("Saved to " .. file_path, vim.log.levels.INFO, {})
 end
 
 
