@@ -21,10 +21,8 @@ function util.handle_stream(cb, prompt)
 
 			-- When the message transmission is marked as complete, write to the file.
 			if body.done then
-				-- Prepare the message with "ANSWER" header.
-				local question = prompt
 				local seperate = "\n\n------------------------------------------------------------------------------\n\n"
-				local message = seperate .. "\n\n\nQUESTION:\n\n\n" .. question .. "\n\n\nRESPONSE:\n\n\n" .. accumulated_response .. seperate
+				local message = seperate .. "\nQUESTION:\n\n\n" .. prompt .. "\n\n\nRESPONSE:\n\n\n" .. accumulated_response .. seperate
 				local file_path = "/tmp/sourceoftruth.md" -- Specify the output file path.
 
 				-- Open the file in append mode.
