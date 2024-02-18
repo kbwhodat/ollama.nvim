@@ -288,7 +288,7 @@ function M.prompt(name)
 		stream = function(_, chunk, job)
 			if stream then
 				stream_called = true
-				require("ollama.util").handle_stream(cb)(_, chunk, job)
+				require("ollama.util").handle_stream(cb, parsed_prompt)(_, chunk, job)
 			end
 		end,
 	})

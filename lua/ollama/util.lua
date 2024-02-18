@@ -2,7 +2,7 @@ local util = {}
 
 local accumulated_response = ""
 ---@param cb fun(body: table, job: Job?)
-function util.handle_stream(cb)
+function util.handle_stream(cb, prompt)
 	return function(_, chunk, job)
 		vim.schedule(function()
 			local _, body = pcall(function()
@@ -22,7 +22,8 @@ function util.handle_stream(cb)
 			-- When the message transmission is marked as complete, write to the file.
 			if body.done then
 				-- Prepare the message with "ANSWER" header.
-				local question = cb.prompt
+				vim.api.nvim_notify(prompt, vim.log.levels.INFO, { title = "Ollama" })
+				local question = prompt
 				local seperate = "\n\n------------------------------------------------------------------------------\n\n"
 				local message = question .. seperate .. "\n\n\n\nRESPONSE:\n\n\n\n" .. accumulated_response .. seperate
 				local file_path = "/tmp/sourceoftruth.md" -- Specify the output file path.
