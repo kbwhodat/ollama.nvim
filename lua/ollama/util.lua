@@ -2,7 +2,6 @@ local util = {}
 
 ---@param cb fun(body: table, job: Job?)
 function util.handle_stream(cb)
-	local full_message = ""
 	return function(_, chunk, job)
 		vim.schedule(function()
 			local _, body = pcall(function()
@@ -15,10 +14,12 @@ function util.handle_stream(cb)
 				return
 			end
 
+			local full_message = ""
+			local full_message = full_message .. body.response
 			local file_path = "/tmp/sourceoftrueth.md" -- Specify the path to your output file
 			local file = io.open(file_path, "a") -- Open the file in append mode
 			if file then
-				file:write(body.response) -- Encode the body to JSON and write to the file
+				file:write(full_message) -- Encode the body to JSON and write to the file
 				file:close() -- Don't forget to close the file
 			else
 				vim.api.nvim_notify("Failed to open file for writing.", vim.log.levels.ERROR, { title = "Ollama" })
