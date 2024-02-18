@@ -14,7 +14,7 @@ function util.handle_stream(cb)
 				return
 			end
 
-			local full_message = ""
+			local full_message = "\n\n\n\nAWNSER:\n\n\n\n"
 			local full_message = full_message .. body.response
 			local file_path = "/tmp/sourceoftrueth.md" -- Specify the path to your output file
 			local file = io.open(file_path, "a") -- Open the file in append mode
