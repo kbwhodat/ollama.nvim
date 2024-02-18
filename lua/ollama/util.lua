@@ -1,5 +1,6 @@
 local util = {}
 
+local accumulated_response = ""
 ---@param cb fun(body: table, job: Job?)
 function util.handle_stream(cb)
 	return function(_, chunk, job)
@@ -14,15 +15,24 @@ function util.handle_stream(cb)
 				return
 			end
 
-			local full_message = "\n\n\n\nAWNSER:\n\n\n\n"
-			local full_message = full_message .. body.response
-			local file_path = "/tmp/sourceoftrueth.md" -- Specify the path to your output file
-			local file = io.open(file_path, "a") -- Open the file in append mode
-			if file then
-				file:write(full_message) -- Encode the body to JSON and write to the file
-				file:close() -- Don't forget to close the file
-			else
-				vim.api.nvim_notify("Failed to open file for writing.", vim.log.levels.ERROR, { title = "Ollama" })
+			if body.response then
+				accumulated_response = accumulated_response .. body.response
+			end
+
+			-- When the message transmission is marked as complete, write to the file.
+			if body.done then
+				-- Prepare the message with "ANSWER" header.
+				local message = "\n\n\n\nRESPONSE:\n\n\n\n" .. accumulated_response
+				local file_path = "/tmp/sourceoftruth.md" -- Specify the output file path.
+
+				-- Open the file in append mode.
+				local file = io.open(file_path, "a")
+				if file then
+					file:write(message) -- Write the accumulated message to the file.
+					file:close() -- Close the file to ensure data is saved.
+				else
+					vim.api.nvim_notify("Failed to open file for writing.", vim.log.levels.ERROR, { title = "Ollama" })
+				end
 			end
 			cb(body, job)
 		end)
