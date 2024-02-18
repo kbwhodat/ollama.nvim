@@ -23,8 +23,8 @@ function util.handle_stream(cb, prompt)
 			if body.done then
 				local seperate = "\n\n------------------------------------------------------------------------------\n\n"
 				local message = seperate .. "\nQUESTION:\n\n\n" .. prompt .. "\n\n\nRESPONSE:\n\n\n" .. accumulated_response .. seperate
-				local dir_path = "~/convo_history/"
-				local file_path = "~/convo_history/response.md"
+				local dir_path = os.getenv("HOME") .. "/convo_history/"
+				local file_path = dir_path .. "response.md"
 
 				os.execute("mkdir -p " .. dir_path)
 
