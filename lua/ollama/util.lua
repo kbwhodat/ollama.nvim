@@ -20,6 +20,7 @@ function util.handle_stream(cb, prompt)
 				accumulated_response = accumulated_response .. body.response
 			end
 
+			-- logic to write to file
 			if body.done then
 				local seperate = "\n\n------------------------------------------------------------------------------\n\n"
 				local message = seperate .. "\nQUESTION:\n\n\n" .. prompt .. "\n\n\nRESPONSE:\n\n\n" .. accumulated_response .. seperate
