@@ -14,12 +14,11 @@ function util.handle_stream(cb)
 				end
 				return
 			end
-			vim.api.nvim_notify(body.response, vim.log.levels.INFO, { title = "Ollama" })
-			-- Here, we'll write the body to a file
-			local file_path = "/tmp/sourceoftrueth.json" -- Specify the path to your output file
+
+			local file_path = "/tmp/sourceoftrueth.md" -- Specify the path to your output file
 			local file = io.open(file_path, "a") -- Open the file in append mode
 			if file then
-				file:write(vim.json.encode(body).. "\n") -- Encode the body to JSON and write to the file
+				file:write(body.response) -- Encode the body to JSON and write to the file
 				file:close() -- Don't forget to close the file
 			else
 				vim.api.nvim_notify("Failed to open file for writing.", vim.log.levels.ERROR, { title = "Ollama" })
