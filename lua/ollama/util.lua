@@ -22,7 +22,7 @@ function util.handle_stream(cb, prompt)
 			-- When the message transmission is marked as complete, write to the file.
 			if body.done then
 				-- Prepare the message with "ANSWER" header.
-				vim.api.nvim_notify(prompt, vim.log.levels.INFO, { title = "Ollama" })
+				vim.api.nvim_notify(vim.json.encode(prompt), vim.log.levels.INFO, { title = "Ollama" })
 				local question = prompt
 				local seperate = "\n\n------------------------------------------------------------------------------\n\n"
 				local message = question .. seperate .. "\n\n\n\nRESPONSE:\n\n\n\n" .. accumulated_response .. seperate
