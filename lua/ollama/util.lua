@@ -1,4 +1,5 @@
 local util = {}
+local os = require("os")
 
 local accumulated_response = ""
 ---@param cb fun(body: table, job: Job?)
@@ -19,17 +20,18 @@ function util.handle_stream(cb, prompt)
 				accumulated_response = accumulated_response .. body.response
 			end
 
-			-- When the message transmission is marked as complete, write to the file.
 			if body.done then
 				local seperate = "\n\n------------------------------------------------------------------------------\n\n"
 				local message = seperate .. "\nQUESTION:\n\n\n" .. prompt .. "\n\n\nRESPONSE:\n\n\n" .. accumulated_response .. seperate
-				local file_path = "/tmp/sourceoftruth.md" -- Specify the output file path.
+				local file_path = "~/convo_history/responses.md"
 
-				-- Open the file in append mode.
+				local dir_path = string.sub(file_path, 1, string.len(file_path) - string.len(string.match(file_path:gmatch("([^/]-)[/%]?$")))) -- Extract the directory path
+				os.execute("mkdir " .. dir_path)
+
 				local file = io.open(file_path, "a")
 				if file then
-					file:write(message) -- Write the accumulated message to the file.
-					file:close() -- Close the file to ensure data is saved.
+					file:write(message)
+					file:close()
 				else
 					vim.api.nvim_notify("Failed to open file for writing.", vim.log.levels.ERROR, { title = "Ollama" })
 				end
