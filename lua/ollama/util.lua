@@ -23,10 +23,10 @@ function util.handle_stream(cb, prompt)
 			if body.done then
 				local seperate = "\n\n------------------------------------------------------------------------------\n\n"
 				local message = seperate .. "\nQUESTION:\n\n\n" .. prompt .. "\n\n\nRESPONSE:\n\n\n" .. accumulated_response .. seperate
-				local file_path = "~/convo_history/responses.md"
+				local dir_path = "~/convo_history/"
+				local file_path = "~/convo_history/response.md"
 
-				local dir_path = string.sub(file_path, 1, string.len(file_path) - string.len(string.match(file_path:gmatch("([^/]-)[/%]?$")))) -- Extract the directory path
-				os.execute("mkdir " .. dir_path)
+				os.execute("mkdir -p " .. dir_path)
 
 				local file = io.open(file_path, "a")
 				if file then
